@@ -1,23 +1,34 @@
 # The fastai DataLoader is a drop-in replacement for Pytorch's;
 #   no code changes are required other than changing the import line
-from fastai.data.load import DataLoader
-import os,torch
-from torch.nn import functional as F
+import os
+
+import torch
 from catalyst import dl
-from catalyst.data.cv import ToTensor
 from catalyst.contrib.datasets import MNIST
+from catalyst.data.cv import ToTensor
 from catalyst.utils import metrics
+from torch.nn import functional as F
+
+from fastai.data.load import DataLoader
 
 model = torch.nn.Linear(28 * 28, 10)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.02)
 
 loaders = {
-    "train": DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=ToTensor()), batch_size=32),
-    "valid": DataLoader(MNIST(os.getcwd(), train=False, download=True, transform=ToTensor()), batch_size=32),
+    "train": DataLoader(
+        MNIST(os.getcwd(), train=True, download=True, transform=ToTensor()),
+        batch_size=32,
+    ),
+    "valid": DataLoader(
+        MNIST(os.getcwd(), train=False, download=True, transform=ToTensor()),
+        batch_size=32,
+    ),
 }
 
+
 class CustomRunner(dl.Runner):
-    def predict_batch(self, batch): return self.model(batch[0].to(self.device).view(batch[0].size(0), -1))
+    def predict_batch(self, batch):
+        return self.model(batch[0].to(self.device).view(batch[0].size(0), -1))
 
     def _handle_batch(self, batch):
         x, y = batch
@@ -33,4 +44,3 @@ class CustomRunner(dl.Runner):
             loss.backward()
             self.optimizer.step()
             self.optimizer.zero_grad()
-

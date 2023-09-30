@@ -1,3 +1,2 @@
-from . import xresnet
-from . import unet
+from . import unet, xresnet
 from .tvm import *

@@ -1,16 +1,17 @@
 # The fastai DataLoader is a drop-in replacement for Pytorch's;
 #   no code changes are required other than changing the import line
-from fastai.data.load import DataLoader
 import torch
-from torch import nn
-from torch.optim import SGD
 import torch.nn.functional as F
-from torchvision.transforms import Compose, ToTensor, Normalize
-from torchvision.datasets import MNIST
-
-from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
+from ignite.engine import Events, create_supervised_evaluator, create_supervised_trainer
 from ignite.metrics import Accuracy, Loss
 from ignite.utils import setup_logger
+from torch import nn
+from torch.optim import SGD
+from torchvision.datasets import MNIST
+from torchvision.transforms import Compose, Normalize, ToTensor
+
+from fastai.data.load import DataLoader
+
 
 class Net(nn.Module):
     def __init__(self):
@@ -30,19 +31,28 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=-1)
 
+
 def get_data_loaders(train_batch_size, val_batch_size):
     data_transform = Compose([ToTensor(), Normalize((0.1307,), (0.3081,))])
     train_loader = DataLoader(
-        MNIST(download=True, root=".", transform=data_transform, train=True), batch_size=train_batch_size, shuffle=True)
+        MNIST(download=True, root=".", transform=data_transform, train=True),
+        batch_size=train_batch_size,
+        shuffle=True,
+    )
     val_loader = DataLoader(
-        MNIST(download=False, root=".", transform=data_transform, train=False), batch_size=val_batch_size, shuffle=False)
+        MNIST(download=False, root=".", transform=data_transform, train=False),
+        batch_size=val_batch_size,
+        shuffle=False,
+    )
     return train_loader, val_loader
+
 
 def run(train_batch_size, val_batch_size, epochs, lr, momentum, log_interval):
     train_loader, val_loader = get_data_loaders(train_batch_size, val_batch_size)
     model = Net()
     device = "cpu"
-    if torch.cuda.is_available(): device = "cuda"
+    if torch.cuda.is_available():
+        device = "cuda"
 
     model.to(device)  # Move model before creating optimizer
     optimizer = SGD(model.parameters(), lr=lr, momentum=momentum)
@@ -71,7 +81,9 @@ def run(train_batch_size, val_batch_size, epochs, lr, momentum, log_interval):
         avg_nll = metrics["nll"]
         tqdm.write(
             "Training Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}".format(
-                engine.state.epoch, avg_accuracy, avg_nll))
+                engine.state.epoch, avg_accuracy, avg_nll
+            )
+        )
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_validation_results(engine):
@@ -81,13 +93,18 @@ def run(train_batch_size, val_batch_size, epochs, lr, momentum, log_interval):
         avg_nll = metrics["nll"]
         tqdm.write(
             "Validation Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}".format(
-                engine.state.epoch, avg_accuracy, avg_nll))
+                engine.state.epoch, avg_accuracy, avg_nll
+            )
+        )
         pbar.n = pbar.last_print_n = 0
 
     @trainer.on(Events.EPOCH_COMPLETED | Events.COMPLETED)
     def log_time(engine):
         tqdm.write(
-            "{} took {} seconds".format(trainer.last_event_name.name, trainer.state.times[trainer.last_event_name.name]))
+            "{} took {} seconds".format(
+                trainer.last_event_name.name,
+                trainer.state.times[trainer.last_event_name.name],
+            )
+        )
 
     trainer.run(train_loader, max_epochs=epochs)
-

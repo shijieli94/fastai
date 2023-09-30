@@ -10,9 +10,17 @@ __all__ = ['MCDropoutCallback']
 # %% ../../nbs/18b_callback.preds.ipynb 6
 class MCDropoutCallback(Callback):
     def before_validate(self):
-        for m in [m for m in flatten_model(self.model) if 'dropout' in m.__class__.__name__.lower()]:
+        for m in [
+            m
+            for m in flatten_model(self.model)
+            if "dropout" in m.__class__.__name__.lower()
+        ]:
             m.train()
-    
+
     def after_validate(self):
-        for m in [m for m in flatten_model(self.model) if 'dropout' in m.__class__.__name__.lower()]:
+        for m in [
+            m
+            for m in flatten_model(self.model)
+            if "dropout" in m.__class__.__name__.lower()
+        ]:
             m.eval()

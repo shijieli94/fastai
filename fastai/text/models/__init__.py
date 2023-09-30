@@ -1,2 +1,2 @@
-from .core import *
 from .awdlstm import *
+from .core import *

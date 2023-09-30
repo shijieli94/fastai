@@ -1,5 +1,6 @@
-from torchvision.models import *
 import types as _t
+
+from torchvision.models import *
 
 _g = globals()
 for _k, _v in list(_g.items()):

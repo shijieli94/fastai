@@ -1,10 +1,12 @@
-from fastai.torch_basics import *
 from fastai.data.load import *
+from fastai.torch_basics import *
+
 
 class RandDL(DataLoader):
     def create_item(self, s):
         r = random.random()
-        return r if r<0.95 else stop()
+        return r if r < 0.95 else stop()
+
 
 if __name__ == "__main__":
     # It can be reproduced in Linux by uncommenting this line

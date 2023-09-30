@@ -1,3 +1,3 @@
-from .xresnet import *
-from .unet import *
 from .tvm import *
+from .unet import *
+from .xresnet import *
